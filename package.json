@@ -6,7 +6,7 @@
   "author": "Sam Corcos <sam@cardash.com>",
   "license": "SEE LICENSE IN LICENSE",
   "scripts": {
-    "dev": "NODE_ENV=development node scripts/dev",
+    "dev": "set NODE_ENV=development & node scripts/dev",
     "test": "exit 0"
   },
   "dependencies": {
