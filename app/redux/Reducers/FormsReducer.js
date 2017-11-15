@@ -4,7 +4,11 @@ import * as types from '../Actions/actionTypes'
 const pipe = (fns, init) => fns.reduce((acc, fn) => fn(acc), init)
 
 const initialState = {
-  // Form goes here
+  createUserForm: {
+    firstName: '',
+    lastName: ''
+  }
+  
 }
 
 export const FormsReducer = (state = initialState, action) => {
