@@ -20,6 +20,8 @@ import Store, {
 import App from './App'
 import Home from './views/Home'
 import About from './views/About'
+import User from './views/Users'
+import CreateUserForm from './views/Users/create'
 
 // eslint-disable-next-line
 require('file-loader?name=sitemap.xml!../sitemap.xml')
@@ -36,7 +38,9 @@ const Root = () => (
         <App>
           <Switch>
             <Route exact path="/" component={Home} />
+            <Route exact path="/show/:userId" component={User} />
             <Route exact path="/about" component={About} />
+            <Route exact path="/create" component={CreateUserForm} />
           </Switch>
         </App>
       </ConnectedRouter>
