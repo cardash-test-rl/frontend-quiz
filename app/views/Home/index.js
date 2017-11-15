@@ -49,8 +49,6 @@ query allUsersQuery {
 }
 `;
 
-//todo: need to optimistically update the UI when adding a new user so the cache updates (aka don't require a full refresh to see the new user)
-
 const HomeWithData = graphql(usersQuery)(Home);
 
 export default HomeWithData;

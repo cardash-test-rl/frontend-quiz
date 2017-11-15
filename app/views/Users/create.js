@@ -1,10 +1,26 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { graphql, compose } from  'react-apollo'
+import { client } from '../../redux/Store'
 import gql from 'graphql-tag'
 import { connect } from 'react-redux'
 import updateForm from '../../redux/Actions/sync/updateForm'
 import resetForm from '../../redux/Actions/sync/resetForm'
+
+
+//graphql queries
+const createUserQuery = gql`
+    mutation createUser($firstName: String!, $lastName: String!) {
+        createUser(firstName: $firstName, lastName:$lastName) {
+            id, 
+            firstName,
+            lastName,
+            createdAt,
+            updatedAt
+        }
+    }
+`;
+
 
 export class CreateUserForm extends React.Component {
     constructor(props) {
@@ -12,7 +28,8 @@ export class CreateUserForm extends React.Component {
         this.onSubmit = this.onSubmit.bind(this);
         this.state = {
             formName: 'createUserForm',
-            updating: this.props.initialState && !!this.props.initialState.id
+            updating: this.props.initialState && !!this.props.initialState.id,
+            createdUser: null
         };
         
 
@@ -32,10 +49,14 @@ export class CreateUserForm extends React.Component {
             return;
         }
 
-       
         this.props.createUser({
-            variables: { firstName: this.props.payload.firstName, lastName: this.props.payload.lastName }
+            variables: {
+                firstName: this.props.payload.firstName,
+                lastName: this.props.payload.lastName
+            },
+            refetchQueries: [ 'allUsersQuery' ],
         }).then(({ data }) => {
+            this.state.createdUser = data.createUser;
             this.props.resetForm(this.state.formName);
             }).catch((error) => {
             console.log('there was an error sending the query', error);
@@ -46,21 +67,24 @@ export class CreateUserForm extends React.Component {
     }
     render() {
         return (
-            <form name={this.state.formName} onSubmit={ (e) => { this.onSubmit(e)} }>
-                <div className="row">
-                    <label>
-                        First Name:
-                        <input type="text" value={ this.props.payload.firstName } onChange={(e) => { this.handleTextChange(e, "firstName") }} />
-                    </label>
-                </div>
-                <div className="row">
-                    <label>
-                        Last Name:
-                        <input type="text" name="lastName" value={ this.props.payload.lastName} onChange={(e) => { this.handleTextChange(e, "lastName") }} />
-                    </label>
-                </div>
-                <input type="submit" value={ this.state.isUpdating ? "Update this User" : "Create This User"} />
-            </form>
+            <div>
+                <form name={this.state.formName} onSubmit={ (e) => { this.onSubmit(e)} }>
+                    <div className="row">
+                        <label>
+                            First Name:
+                            <input type="text" value={ this.props.payload.firstName } onChange={(e) => { this.handleTextChange(e, "firstName") }} />
+                        </label>
+                    </div>
+                    <div className="row">
+                        <label>
+                            Last Name:
+                            <input type="text" name="lastName" value={ this.props.payload.lastName} onChange={(e) => { this.handleTextChange(e, "lastName") }} />
+                        </label>
+                    </div>
+                    <input type="submit" value={ this.state.isUpdating ? "Update this User" : "Create This User"} />
+                </form>
+                { this.state.createdUser && <div>Successfully created user </div>}
+            </div>
         );
     }
 }
@@ -70,54 +94,9 @@ CreateUserForm.propTypes = {
 };
 
 
-//graphql queries
-const createUserQuery = gql`
-    mutation createUser($firstName: String!, $lastName: String!) {
-        createUser(firstName: $firstName, lastName:$lastName) {
-            id, 
-            firstName,
-            lastName,
-            createdAt,
-            updatedAt
-        }
-    }
-    `;
-
-const updateUserQuery = gql`
-mutation updateUser($firstName: String, $lastName: String, $id: ID!) {
-    createUser(firstName: $firstName, lastName:$lastName, id: $id) {
-        id, 
-        firstName,
-        lastName,
-        createdAt,
-        updatedAt
-    }
-}
-`;
-
-
 const ConnectedCreateUserForm = compose(
     graphql(createUserQuery, { 
-        name: 'createUser' //,
-        // props: ({ mutate }) => ({
-        //     createUser: (payload) => mutate({ 
-        //         variables: { 
-        //             firstName: payload.firstName, 
-        //             lastName: payload.lastName 
-        //         } 
-        //     })
-        // }) 
-    }),
-    graphql(updateUserQuery, { 
-        name: 'updateUser',
-        props: ({ mutate }) => ({
-            updateUser: (payload) => mutate({ 
-                variables: { 
-                    firstName: payload.firstName, 
-                    lastName: payload.lastName 
-                } 
-            })
-        }) 
+        name: 'createUser'
     }),
     connect( 
         state => ({ payload: state.forms.createUserForm }),
